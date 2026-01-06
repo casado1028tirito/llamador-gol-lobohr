@@ -1,74 +1,91 @@
 """Configuración - Sistema de Llamadas Colombia"""
 from pydantic_settings import BaseSettings
 from pydantic import Field
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
     """Configuración optimizada para llamadas en Colombia"""
     
-    # APIs esenciales
-    telegram_bot_token: str
-    telegram_admin_ids: str
-    twilio_account_sid: str
-    twilio_auth_token: str
-    twilio_phone_number: str
-    openai_api_key: str
-    elevenlabs_api_key: str
+    # APIs esenciales - Con valores por defecto para evitar crashes
+    telegram_bot_token: str = Field(default="")
+    telegram_admin_ids: str = Field(default="")
+    twilio_account_sid: str = Field(default="")
+    twilio_auth_token: str = Field(default="")
+    twilio_phone_number: str = Field(default="")
+    openai_api_key: str = Field(default="")
+    elevenlabs_api_key: str = Field(default="")
     
     # ========================================
-    # VOZ LLAMADOR EL LOBO HR - ASESORA PROFESIONAL
+    # VOZ COLOMBIANA - ASESORA PROFESIONAL BANCARIA
     # ========================================
     
-    # Voz de LLAMADOR EL LOBO HR - Natural, expresiva y profesional
-    voice_bot: str = "E5HSnXz7WUojYdJeUcng"  # LLAMADOR EL LOBO HR (Nueva voz)
+    # Voz E5HSnXz7WUojYdJeUcng - Natural, expresiva, profesional
+    # Ideal para asesora de banco colombiano en Medellín
+    voice_bot: str = "E5HSnXz7WUojYdJeUcng"  # Voz colombiana profesional
     default_voice_id: str = "E5HSnXz7WUojYdJeUcng"
     
-    # OPCIÓN 2: Para CLONAR TU PROPIA VOZ:
-    # 1. Ve a https://elevenlabs.io/voice-lab
-    # 2. Sube 1-5 minutos de audio limpio
-    # 3. Copia el Voice ID generado
-    # 4. Pégalo arriba en voice_bot y default_voice_id
+    # CONFIGURACIÓN ÓPTIMA PARA VOZ NATURAL Y EXPRESIVA
+    # Ajustada para máxima naturalidad y fluidez en conversación bancaria
+    voice_stability: float = 0.55  # Balance entre naturalidad y consistencia
+    voice_similarity: float = 0.85  # Alta fidelidad con la voz original
+    voice_style: float = 0.65      # Muy expresiva y conversacional
+    voice_speaker_boost: bool = True  # Claridad cristalina en llamadas telefónicas
     
-    # SETTINGS LLAMADOR EL LOBO HR - VOZ PERFECTA Y NATURAL
-    voice_stability: float = 0.50  # Más naturalidad y variación
-    voice_similarity: float = 0.85  # Balance perfecto con voz original
-    voice_style: float = 0.60      # Muy expresiva y conversacional
-    voice_speaker_boost: bool = True  # Claridad perfecta en llamadas
+    # IA Conversacional - Optimizada para atención bancaria profesional
+    ai_model: str = "gpt-4o-mini"  # Modelo eficiente y rápido
+    ai_temperature: float = 0.82  # Profesional, cálida y natural
+    ai_max_tokens: int = 65  # Respuestas completas y precisas (15-30 palabras)
+    ai_timeout: float = 2.5  # Tiempo adecuado para respuestas de calidad
     
-    # IA para conversación PROFESIONAL Y NATURAL
-    ai_model: str = "gpt-4o-mini"  # Modelo más rápido
-    ai_temperature: float = 0.85  # Profesional y natural
-    ai_max_tokens: int = 60  # Respuestas completas sin cortar (15-25 palabras)
-    ai_timeout: float = 2.0  # Timeout optimizado para respuestas completas
+    # Configuración de llamadas - Optimizada para conversación natural
+    gather_timeout: int = 6  # Tiempo para que el cliente comience a hablar
+    speech_timeout: int = 2  # Silencio que indica fin de respuesta
+    max_speech_time: int = 60  # Tiempo máximo por intervención del cliente
+    max_concurrent_calls: int = 50  # Capacidad de llamadas simultáneas
+    no_speech_attempts: int = 2  # Intentos antes de finalizar por silencio
+    profanity_filter: bool = False  # Sin filtro para lenguaje natural
     
-    # Llamadas optimizadas - ESCUCHA PERFECTA Y RESPUESTA INMEDIATA
-    gather_timeout: int = 5  # 5 segundos - tiempo para que empiece a hablar
-    speech_timeout: int = 1  # 1 segundo - cuánto silencio indica que terminó
-    max_speech_time: int = 60  # 60 segundos - tiempo máximo por respuesta
-    max_concurrent_calls: int = 50  # Soportar más llamadas
-    no_speech_attempts: int = 2  # Solo 2 intentos - no molestar
-    profanity_filter: bool = False
-    
-    # Reconocimiento de voz optimizado para COLOMBIA
-    speech_model: str = "phone_call"  # Modelo optimizado para llamadas
-    language: str = "es-CO"  # Español Colombia
-    enhanced: bool = True  # Reconocimiento mejorado
+    # Reconocimiento de voz - Optimizado para español colombiano
+    speech_model: str = "phone_call"  # Modelo especializado en llamadas
+    language: str = "es-CO"  # Español de Colombia
+    enhanced: bool = True  # Reconocimiento mejorado activado
     partial_result_callback: bool = False  # Desactivar resultados parciales
-    profanity_filter_twilio: bool = False  # Sin filtro de palabras
+    profanity_filter_twilio: bool = False  # Sin filtro restrictivo
     
-    # DTMF - Permitir entrada por teclado
-    dtmf_enabled: bool = True  # Activar entrada por teclado
-    num_digits: int = 20  # Máximo dígitos DTMF
+    # DTMF - Entrada por teclado telefónico
+    dtmf_enabled: bool = True  # Permitir entrada numérica
+    num_digits: int = 20  # Máximo de dígitos DTMF
     
-    # Webhook - Railway asigna PORT dinámicamente
-    webhook_url: str
+    # Webhook - Configuración para Railway (puerto dinámico)
+    webhook_url: str = Field(default="")
     webhook_port: int = Field(default=8000, validation_alias='PORT')
     
     class Config:
         env_file = ".env"
         case_sensitive = False
-        extra = "ignore"  # Ignorar campos extra del .env
+        extra = "ignore"  # Ignorar campos adicionales
+        
+    def validate_configuration(self) -> bool:
+        """Validar que las configuraciones críticas estén presentes"""
+        required_fields = {
+            "telegram_bot_token": self.telegram_bot_token,
+            "twilio_account_sid": self.twilio_account_sid,
+            "twilio_auth_token": self.twilio_auth_token,
+            "openai_api_key": self.openai_api_key,
+            "elevenlabs_api_key": self.elevenlabs_api_key,
+            "webhook_url": self.webhook_url
+        }
+        
+        missing_fields = [field for field, value in required_fields.items() if not value]
+        
+        if missing_fields:
+            from loguru import logger
+            logger.error(f"❌ Variables de entorno faltantes: {', '.join(missing_fields)}")
+            logger.error("⚠️ Configura estas variables en Railway o tu .env antes de continuar")
+            return False
+        
+        return True
     
     @property
     def admin_ids_list(self) -> List[int]:
